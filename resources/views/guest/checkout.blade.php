@@ -166,15 +166,26 @@
             // Handle Dynamic Gateways
             if(data.type === 'midtrans') {
                 snap.pay(data.snap_token, {
-                    onSuccess: () => window.location.href = "{{ route('booking.success') }}?order_id=" + data.transaction_id,
-                    onPending: () => window.location.href = "{{ route('booking.success') }}?order_id=" + data.transaction_id
+                    // PERBAIKAN: Gunakan concatenate string untuk ID transaksi
+                    onSuccess: function(result) {
+                        window.location.href = "/booking/success/" + data.transaction_id;
+                    },
+                    onPending: function(result) {
+                        window.location.href = "/booking/success/" + data.transaction_id;
+                    },
+                    onError: function(result) {
+                        Swal.fire({ icon: 'error', title: 'Payment Failed', text: 'Please try again.' });
+                        btn.disabled = false;
+                        btn.innerText = 'AUTHORIZE TRANSACTION';
+                    }
                 });
             } else if(data.type === 'xendit') {
                 window.location.href = data.invoice_url; 
             } else {
-                window.location.href = "{{ route('booking.success') }}?order_id=" + data.transaction_id;
+                // PERBAIKAN: Redirect manual (Bank Transfer/Manual)
+                window.location.href = "/booking/success/" + data.transaction_id;
             }
-        })
+})
         .catch(err => {
             Swal.fire({ icon: 'error', title: 'Authorization Failed', text: err.message });
             btn.disabled = false;

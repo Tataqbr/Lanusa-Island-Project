@@ -42,6 +42,9 @@ Route::post('/booking/verify', [BookingController::class, 'verifyCode'])->name('
 Route::get('/booking/checkout/{resort_id}/{user_id}', [BookingController::class, 'checkout'])->name('booking.checkout');
 Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
 
+Route::get('/booking/success/{order_id}', [BookingController::class, 'success'])->name('booking.success');
+Route::get('/booking/download-contract/{order_id}', [BookingController::class, 'downloadContract'])->name('booking.download_contract');
+
 // Route::get('login', function () {
 //     return view('guest.login');
 // })->name('login');

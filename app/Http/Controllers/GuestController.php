@@ -15,7 +15,7 @@ class GuestController extends Controller
         ->LeftJoin('regions', 'destinations.region_id', '=', 'regions.id')
         ->select('resorts.*', 'resorts.id as id_resort', 'destinations.name as destination', 'regions.name as region')
         ->limit(3)
-        ->orderBy('resorts.price', 'DESC')
+        ->where('regions.name', 'Bali & Nusa Tenggara')
         ->get();
 
         $dataMemberships = DB::table('membership')->select('*')->get();

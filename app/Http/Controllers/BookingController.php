@@ -176,4 +176,52 @@ class BookingController extends Controller
         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
 }
+
+/**
+ * Halaman Sukses Booking
+ */
+public function success($order_id)
+{
+    // Cari data booking berdasarkan transaction_id
+    $booking = DB::table('bookings')
+        ->join('resorts', 'bookings.resort_id', '=', 'resorts.id')
+        ->join('users', 'bookings.user_id', '=', 'users.id')
+        ->select('bookings.*', 'resorts.name as resort_name', 'resorts.slug', 'users.name as user_name', 'users.email')
+        ->where('bookings.transaction_id', $order_id)
+        ->first();
+
+    if (!$booking) abort(404);
+
+    return view('payment.booking-success', compact('booking'));
+}
+
+/**
+ * Generate PDF Kontrak Kerjasama/Booking
+ */
+public function downloadContract($order_id)
+{
+    $booking = DB::table('bookings')
+        ->join('resorts', 'bookings.resort_id', '=', 'resorts.id')
+        ->join('users', 'bookings.user_id', '=', 'users.id')
+        ->select('bookings.*', 'resorts.name as resort_name', 'resorts.location', 'users.name as user_name', 'users.email', 'users.phone')
+        ->where('bookings.transaction_id', $order_id)
+        ->first();
+
+    if (!$booking) abort(404);
+
+    // Proses Logo ke Base64
+    $path = public_path('assets/logo.png'); // Pastikan path ini mengarah ke logo Anda
+    $type = pathinfo($path, PATHINFO_EXTENSION);
+    $data = file_get_contents($path);
+    $base64Logo = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+    $data = [
+        'booking' => $booking,
+        'date' => now()->format('d F Y'),
+        'base64Logo' => $base64Logo // Kirim logo ke view
+    ];
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.contract', $data);
+    return $pdf->download('Contract-Lanusa-' . $booking->transaction_id . '.pdf');
+}
 }
